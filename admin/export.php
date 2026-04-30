@@ -1,0 +1,2 @@
+<?php include '../config.php'; header('Content-Type:text/csv');header('Content-Disposition:attachment;filename=report.csv');$q=$conn->query('SELECT * FROM concerns');while($r=$q->fetch_assoc()) echo implode(',',$r)."
+";?>

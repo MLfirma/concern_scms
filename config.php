@@ -1,0 +1,1 @@
+<?php $conn=new mysqli('localhost','root','','scms'); if($conn->connect_error) die('DB Error');?>
