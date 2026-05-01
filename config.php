@@ -1,1 +1,12 @@
-<?php $conn=new mysqli('localhost','root','','scms'); if($conn->connect_error) die('DB Error');?>
+<?php
+$host = "localhost";
+$user = "root";
+$pass = "";
+$dbname = "scms";
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>

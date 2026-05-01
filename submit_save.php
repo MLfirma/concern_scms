@@ -1,51 +1,26 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'admin/PHPMailer/Exception.php';
-require 'admin/PHPMailer/PHPMailer.php';
-require 'admin/PHPMailer/SMTP.php';
-
 include 'config.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $student_email = mysqli_real_escape_string($conn, $_POST['student_email']);
-    $category      = mysqli_real_escape_string($conn, $_POST['category']);
-    $program       = mysqli_real_escape_string($conn, $_POST['program']);
-    $department    = mysqli_real_escape_string($conn, $_POST['department']);
-    $description   = mysqli_real_escape_string($conn, $_POST['description']);
-    $status        = "Submitted";
-    $created_at    = date('Y-m-d H:i:s');
+if (isset($_POST['submit_concern'])) {
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
+    $program = mysqli_real_escape_string($conn, $_POST['program']);
+    $description = mysqli_real_escape_string($conn, $_POST['description']);
+    $status = "Submitted"; // Default status
 
-    $sql = "INSERT INTO concerns (category, program, department, description, student_email, status, created_at) 
-            VALUES ('$category', '$program', '$department', '$description', '$student_email', '$status', '$created_at')";
+    $sql = "INSERT INTO concerns (email, category, program, description, status) 
+            VALUES ('$email', '$category', '$program', '$description', '$status')";
 
-    if ($conn->query($sql) === TRUE) {
-        $last_id = $conn->insert_id;
+    if ($conn->query($sql)) {
+        // OPTIONAL: Mag-send ng "Thank You" email sa student
+        $subject = "Concern Received - ConcernHub";
+        $message = "Hi! We have received your concern regarding $category. You can track it using your email on our website.";
+        $headers = "From: no-reply@concernhub.com";
+        @mail($email, $subject, $message, $headers);
 
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = 'firmamarylloyd@gmail.com'; 
-            $mail->Password   = 'fhdhruftbbryzjib';         
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
-
-            $mail->setFrom('firmamarylloyd@gmail.com', 'ConcernHub Admin');
-            $mail->addAddress($student_email);
-
-            $mail->isHTML(true);
-            $mail->Subject = "Concern Submitted - ID #$last_id";
-            $mail->Body    = "<h3>Hi!</h3><p>Your concern has been submitted. Reference ID: <b>#$last_id</b></p>";
-
-            $mail->send();
-        } catch (Exception $e) { }
-
-        echo "<script>alert('Success! ID: #$last_id'); window.location.href='index.php';</script>";
+        header("Location: index.php?status=success");
     } else {
-        die("Error: " . $conn->error);
+        echo "Error: " . $conn->error;
     }
 }
 ?>
